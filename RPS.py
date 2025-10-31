@@ -25,15 +25,22 @@ def player(prev_play, opponent_history=[], my_history=[]):
     # guess = counter[predicted]
     
     # Strategy Mrugesh: Beat Mrugesh by predicting his counter to
-    my_last_ten = my_history[-10:]
-    if not my_last_ten:
-        predicted_my_move = 'R'
-    else:
-        predicted_my_move = max(set(my_last_ten), key=my_last_ten.count)
-    mrugesh_next = counter[predicted_my_move]
-    guess = counter[mrugesh_next]
+    # myLastTen = my_history[-10:]
+    # if not myLastTen:
+        # predicted_my_move = 'R'
+    # else:
+        # predicted_my_move = max(set(myLastTen), key=myLastTen.count)
+    # mrugesh_next = counter[predicted_my_move]
+    # guess = counter[mrugesh_next]
 
     # Strategy Kris: Strategy to beat Kris; always plays what beats the last move.
+    if my_history:
+        kris_next = counter[my_history[-1]]
+        guess = counter[kris_next]
+    else:
+        # Kris opens with 'P' (since he assumes our '' -> 'R'), so play 'S'
+        guess = 'S'
+
     
     # Track our own move history for strategies that need it
     my_history.append(guess)
