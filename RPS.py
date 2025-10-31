@@ -1,6 +1,6 @@
 import random
 
-def player(prev_play, opponent_history=[]):
+def player(prev_play, opponent_history=[], my_history=[]):
     # Default move
     guess = 'R'
     
@@ -12,24 +12,29 @@ def player(prev_play, opponent_history=[]):
     if not opponent_history:
         return guess    
     
-    # Map of counters
+    # Map of counters & possible moves
     counter = {"R": "P", "P": "S", "S": "R"}
+    moves = ["R", "P", "S"]
 
     # Strategy 1: Random choice
     # guess = random.choice(['R', 'P', 'S'])
     
     # Strategy Quincy: Strategy to beat Quincy; cyclic sequence > R, R, P, P, S, R, R, P, P, S,
-    choices = ["R", "R", "P", "P", "S"]
-    predicted = choices[len(opponent_history) % len(choices)]
-    guess = counter[predicted]
+    # choices = ["R", "R", "P", "P", "S"]
+    # predicted = choices[len(opponent_history) % len(choices)]
+    # guess = counter[predicted]
     
-    # Strategy Mrugesh: Strategy to beat Mrugesh; looks at the last 10 plays, finds the most frequent move
-    # tenMoves = opponent_history[-10:]
-    # most_move = max(set(tenMoves), key=tenMoves.count)
-    # ideal_response = {'P': 'S', 'R': 'P', 'S': 'R'}
-    # guess = ideal_response[most_move]
-    
-    
+    # Strategy Mrugesh: Beat Mrugesh by predicting his counter to
+    my_last_ten = my_history[-10:]
+    if not my_last_ten:
+        predicted_my_move = 'R'
+    else:
+        predicted_my_move = max(set(my_last_ten), key=my_last_ten.count)
+    mrugesh_next = counter[predicted_my_move]
+    guess = counter[mrugesh_next]
+
     # Strategy Kris: Strategy to beat Kris; always plays what beats the last move.
     
+    # Track our own move history for strategies that need it
+    my_history.append(guess)
     return guess
