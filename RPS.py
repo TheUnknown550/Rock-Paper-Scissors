@@ -4,5 +4,13 @@ def player(prev_play, opponent_history=[]):
     # Default move
     guess = 'R'
     
+    # Keeping track of the history
+    if prev_play != "": # if we haven't played yet
+        opponent_history.append(prev_play)
+    
+    # if history is empty use the default guess
+    if not opponent_history:
+        return guess    
+        
     
     return guess
