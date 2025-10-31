@@ -1,4 +1,4 @@
-# The example function below keeps track of the opponent's history and plays whatever the opponent played two plays ago. It is not a very good player so you will need to change the code to pass the challenge.
+import random
 
 def player(prev_play, opponent_history=[]):
     # Default move
@@ -8,9 +8,12 @@ def player(prev_play, opponent_history=[]):
     if prev_play != "": # if we haven't played yet
         opponent_history.append(prev_play)
     
-    # if history is empty use the default guess
+    # If history is empty use the default guess
     if not opponent_history:
         return guess    
-        
+
+    # Strategy 1: Random choice
+    guess = random.choice(['R', 'P', 'S'])
+         
     
     return guess
