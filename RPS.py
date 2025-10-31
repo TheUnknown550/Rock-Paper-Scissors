@@ -11,14 +11,25 @@ def player(prev_play, opponent_history=[]):
     # If history is empty use the default guess
     if not opponent_history:
         return guess    
+    
+    # Map of counters
+    counter = {"R": "P", "P": "S", "S": "R"}
 
     # Strategy 1: Random choice
-    guess = random.choice(['R', 'P', 'S'])
-         
-    # Strategy Quincy: Strategy to beat Quincy
-    tenMoves = opponent_history[-10:]
-    most_move = max(set(tenMoves), key=tenMoves.count)
-    ideal_response = {'P': 'S', 'R': 'P', 'S': 'R'}
-    guess = ideal_response[most_move]
+    # guess = random.choice(['R', 'P', 'S'])
+    
+    # Strategy Quincy: Strategy to beat Quincy; cyclic sequence > R, R, P, P, S, R, R, P, P, S,
+    choices = ["R", "R", "P", "P", "S"]
+    predicted = choices[len(opponent_history) % len(choices)]
+    guess = counter[predicted]
+    
+    # Strategy Mrugesh: Strategy to beat Mrugesh; looks at the last 10 plays, finds the most frequent move
+    # tenMoves = opponent_history[-10:]
+    # most_move = max(set(tenMoves), key=tenMoves.count)
+    # ideal_response = {'P': 'S', 'R': 'P', 'S': 'R'}
+    # guess = ideal_response[most_move]
+    
+    
+    # Strategy Kris: Strategy to beat Kris; always plays what beats the last move.
     
     return guess
