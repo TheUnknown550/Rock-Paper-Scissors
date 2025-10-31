@@ -1,13 +1,13 @@
 import random
 from collections import defaultdict
 
-def beat_Quincys(prev_play, opponent_history):
+def beat_Quincys(opponent_history): # 5-move repeat pattern R,R,P,P,S
     counter = {"R": "P", "P": "S", "S": "R"}
     choices = ["R", "R", "P", "P", "S"]
     predicted = choices[len(opponent_history) % len(choices)]
     return counter[predicted]
 
-def beat_Mrugesh(prev_play, my_history):
+def beat_Mrugesh(my_history): # Plays what beats your most frequent
     counter = {"R": "P", "P": "S", "S": "R"}
     myLastTen = my_history[-10:]
     if not myLastTen:
@@ -17,7 +17,7 @@ def beat_Mrugesh(prev_play, my_history):
     mrugesh_next = counter[predicted_my_move]
     return counter[mrugesh_next]
 
-def beat_Kris(prev_play, my_history):
+def beat_Kris(my_history): # Plays what beats your last move
     counter = {"R": "P", "P": "S", "S": "R"}
     if my_history:
         kris_next = counter[my_history[-1]]
@@ -26,7 +26,7 @@ def beat_Kris(prev_play, my_history):
         # Kris opens with 'P' (since he assumes our '' -> 'R'), so play 'S'
         return 'S'
     
-def beat_Abbeys(prev_play, my_history):
+def beat_Abbeys(my_history): # Uses 2-move Markov prediction
     counter = {"R": "P", "P": "S", "S": "R"}
     if my_history:
         # Build transition counts: XY means we played X then Y
@@ -46,40 +46,53 @@ def beat_Abbeys(prev_play, my_history):
     return counter[abbey_next]
 
 
+def pick_strategy(prev_play, opponent_history, my_history, state):
+    counter = {"R": "P", "P": "S", "S": "R"}
 
+    # Update expert weights based on last observed opponent move
+    if prev_play != "" and state.get('last_suggestions'):
+        for expert, move in state['last_suggestions'].items():
+            if move == prev_play:
+                continue  # tie, no change
+            elif counter.get(move) == prev_play:
+                state['weights'][expert] -= 1  # would have lost
+            elif counter.get(prev_play) == move:
+                state['weights'][expert] += 1  # would have won
 
-def player(prev_play, opponent_history=[], my_history=[]):
-    # Default move
-    guess = 'R'
-    
-    # Keeping track of the history
-    if prev_play != "": # if we haven't played yet
+    # Record opponent history
+    if prev_play != "":
         opponent_history.append(prev_play)
-    
-    # If history is empty use the default guess
-    if not opponent_history:
-        return guess    
-    
-    # Map of counters & possible moves
-    
-    moves = ["R", "P", "S"]
 
-    # Strategy 1: Random choice
-    # guess = random.choice(['R', 'P', 'S'])
-    
-    # Strategy Quincy: Strategy to beat Quincy; cyclic sequence > R, R, P, P, S, R, R, P, P, S,
-    guess = beat_Quincys(prev_play, opponent_history)
-     
-    # Strategy Mrugesh: Beat Mrugesh by predicting his counter to
-    guess = beat_Mrugesh(prev_play, my_history)
-    
-    # Strategy Kris: Strategy to beat Kris; always plays what beats the last move.
-    guess = beat_Kris(prev_play, my_history)
-                 
-    # Strategy Abbey: Uses 2-move Markov prediction
-    guess = beat_Abbeys(prev_play, my_history)
+    # Get current suggestions from your helper strategies
+    suggestions = {
+        'quincy': beat_Quincys(opponent_history),
+        'mrugesh': beat_Mrugesh(my_history),
+        'kris': beat_Kris(my_history),
+        'abbey': beat_Abbeys(my_history),
+    }
 
-    # Track our own move history for strategies that need it
+    # Pick expert with highest weight; prefer 'quincy' on exact tie (solid opener)
+    best_expert = max(state['weights'], key=lambda k: (state['weights'][k], k == 'quincy'))
+    guess = suggestions[best_expert]
+
+    # Save suggestions for next round weight update
+    state['last_suggestions'] = suggestions
+
+    return guess
+
+
+def player(prev_play, opponent_history=[], my_history=[], state={
+    'weights': {'quincy': 0, 'mrugesh': 0, 'kris': 0, 'abbey': 0},
+    'last_suggestions': None,
+}):
+    # Start of a new game: clear histories and reset weights
+    if prev_play == "":
+        opponent_history.clear()
+        my_history.clear()
+        state['weights'] = {'quincy': 0, 'mrugesh': 0, 'kris': 0, 'abbey': 0}
+        state['last_suggestions'] = None
+    
+    # pick a strategy based on working 
+    guess = pick_strategy(prev_play, opponent_history, my_history, state)
     my_history.append(guess)
-    
     return guess
