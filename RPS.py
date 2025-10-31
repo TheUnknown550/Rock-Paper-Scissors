@@ -15,5 +15,10 @@ def player(prev_play, opponent_history=[]):
     # Strategy 1: Random choice
     guess = random.choice(['R', 'P', 'S'])
          
+    # Strategy Quincy: Strategy to beat Quincy
+    tenMoves = opponent_history[-10:]
+    most_move = max(set(tenMoves), key=tenMoves.count)
+    ideal_response = {'P': 'S', 'R': 'P', 'S': 'R'}
+    guess = ideal_response[most_move]
     
     return guess
